@@ -40,8 +40,6 @@ export interface InputSchema {
 
 export interface Result {
   readonly kind: "ok";
-  readonly inputValue: InputValue;
-  readonly inputSchema: InputSchema;
   readonly readableJsonEditorState: EditorState;
   readonly denseJsonEditorState: EditorState;
   readonly base16EditorState: EditorState;
@@ -76,20 +74,20 @@ export interface AppState {
 }
 
 export function updateAppState(
-  inputValueText: string,
-  inputFormat: "auto" | "json" | "base16" | "base64",
-  inputSchemaText: string,
+  valueText: string,
+  format: "auto" | "json" | "base16" | "base64",
+  schemaText: string,
   previousState: AppState,
 ): AppState {
   const inputValue =
-    inputValueText === previousState.input.text &&
-    inputFormat === previousState.input.format
+    valueText === previousState.input.text &&
+    format === previousState.input.format
       ? previousState.input
-      : makeInputValue(inputValueText, inputFormat);
+      : makeInputValue(valueText, format);
   const inputSchema =
-    inputSchemaText === previousState.schema.text
+    schemaText === previousState.schema.text
       ? previousState.schema
-      : makeInputSchema(inputSchemaText);
+      : makeInputSchema(schemaText);
   return inputValue === previousState.input &&
     inputSchema === previousState.schema
     ? previousState
@@ -213,8 +211,6 @@ function computeResult(input: InputValue, schema: InputSchema): ResultOrError {
 
   return {
     kind: "ok",
-    inputValue: input,
-    inputSchema: schema,
     readableJsonEditorState: EditorState.create({
       doc: JSON.stringify(readableJson, null, 2),
     }),

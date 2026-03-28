@@ -1,8 +1,17 @@
+// TODO: add number of UTF-8 bytes copied
+
 import { css, html, LitElement, TemplateResult } from "lit";
 import { customElement, query, state } from "lit/decorators.js";
+import { EditorState } from "@codemirror/state";
+import { basicSetup as codemirrorBasicSetup } from "codemirror";
+import { json } from "@codemirror/lang-json";
+import { tokyoNightDay } from "@uiw/codemirror-theme-tokyo-night-day";
 import { AppState, makeZeroState, updateAppState } from "./app-state";
 import "./code-mirror";
 import { CodeMirror } from "./code-mirror";
+
+const basicSetup = () => codemirrorBasicSetup;
+const tokyoNightDayTheme = () => tokyoNightDay;
 
 @customElement("skir-converter-app")
 export class App extends LitElement {
@@ -366,9 +375,11 @@ export class App extends LitElement {
 
         <div class="panel-body compact-area">
           <div class="field">
-            <label for="schema-json">Schema JSON</label>
             <skir-code-mirror
               id="schema-json"
+              .initialState=${EditorState.create({
+                extensions: [basicSetup(), tokyoNightDayTheme(), json()],
+              })}
               @text-modified=${(): void => this.onSchemaTextModified()}
             ></skir-code-mirror>
           </div>
@@ -393,10 +404,12 @@ export class App extends LitElement {
 
         <div class="panel-body compact-area">
           <div class="field">
-            <label for="input-value">Input value</label>
             <skir-code-mirror
               id="input-value"
-              @text-modified=${(): void => this.onInputValueTextModified()}
+              .initialState=${EditorState.create({
+                extensions: [basicSetup(), tokyoNightDayTheme()],
+              })}
+              @text-modified=${(): void => this.onValueTextModified()}
             ></skir-code-mirror>
           </div>
 
@@ -407,7 +420,7 @@ export class App extends LitElement {
               .value=${this.appState.input.format}
               @change=${(): void => this.updateState()}
             >
-              <option value="detect">Detect</option>
+              <option value="auto">Auto</option>
               <option value="json">JSON</option>
               <option value="base16">Binary (base 16)</option>
               <option value="base64">Binary (base 64)</option>
@@ -498,42 +511,42 @@ ${this.getResultPreview(this.resultTab)}</pre
 
   updateState(): void {
     const oldState = this.appState;
-    let inputValueText: string;
-    if (this.inputValueTextWasModified) {
-      inputValueText = this.inputValueElement!.state.doc.toString();
-      this.inputValueTextWasModified = false;
+    let valueText: string;
+    if (this.valueTextWasModified) {
+      valueText = this.inputValueElement!.state.doc.toString();
+      this.valueTextWasModified = false;
     } else {
-      inputValueText = oldState.input.text;
+      valueText = oldState.input.text;
     }
     const inputFormat = this.inputKindElement!
       .value as AppState["input"]["format"];
-    let inputSchemaText: string;
-    if (this.inputSchemaTextWasModified) {
-      inputSchemaText = this.inputSchemaElement!.state.doc.toString();
-      this.inputSchemaTextWasModified = false;
+    let schemaText: string;
+    if (this.schemaTextWasModified) {
+      schemaText = this.inputSchemaElement!.state.doc.toString();
+      this.schemaTextWasModified = false;
     } else {
-      inputSchemaText = oldState.schema.text;
+      schemaText = oldState.schema.text;
     }
     const newState = updateAppState(
-      inputValueText,
+      valueText,
       inputFormat,
-      inputSchemaText,
+      schemaText,
       oldState,
     );
     this.appState = newState;
   }
 
-  private inputValueTextWasModified = false;
-  private inputSchemaTextWasModified = false;
+  private valueTextWasModified = false;
+  private schemaTextWasModified = false;
   private stateUpdateTimeoutHandle: ReturnType<typeof setTimeout> | undefined;
 
-  private onInputValueTextModified(): void {
-    this.inputValueTextWasModified = true;
+  private onValueTextModified(): void {
+    this.valueTextWasModified = true;
     this.scheduleStateUpdate();
   }
 
   private onSchemaTextModified(): void {
-    this.inputSchemaTextWasModified = true;
+    this.schemaTextWasModified = true;
     this.scheduleStateUpdate();
   }
 

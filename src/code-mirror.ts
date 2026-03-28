@@ -1,7 +1,7 @@
 import { EditorState, Transaction } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import { css, html, LitElement, TemplateResult } from "lit";
-import { customElement } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 
 @customElement("skir-code-mirror")
 export class CodeMirror extends LitElement {
@@ -19,6 +19,9 @@ export class CodeMirror extends LitElement {
   override render(): TemplateResult {
     return html`<div id="container"></div>`;
   }
+
+  @property({ type: Object })
+  initialState: EditorState = EditorState.create({});
 
   override firstUpdated(): void {
     const container = this.renderRoot.querySelector("#container");
@@ -43,7 +46,7 @@ export class CodeMirror extends LitElement {
 
   get state(): EditorState {
     if (this.editor.kind === "state") {
-      return this.editor.value;
+      return this.editor.value ?? this.initialState;
     } else {
       return this.editor.value.state;
     }
@@ -75,10 +78,10 @@ export class CodeMirror extends LitElement {
       }
     | {
         kind: "state";
-        value: EditorState;
+        value: EditorState | null;
       } = {
     kind: "state",
-    value: EditorState.create({}),
+    value: null,
   };
 }
 
