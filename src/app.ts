@@ -264,24 +264,6 @@ export class App extends LitElement {
       background: var(--line);
     }
 
-    .result-body {
-      flex: 1;
-      margin: 0;
-      padding: 0.65rem;
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 0.78rem;
-      color: #5a689d;
-      background: repeating-linear-gradient(
-        180deg,
-        #f8faff,
-        #f8faff 26px,
-        #f3f6ff 26px,
-        #f3f6ff 52px
-      );
-      overflow: auto;
-      line-height: 1.5;
-    }
-
     .result-panel-body {
       border: 1px solid var(--line);
       border-radius: 12px;
@@ -290,6 +272,46 @@ export class App extends LitElement {
       min-height: 210px;
       display: flex;
       flex-direction: column;
+    }
+
+    .result-editors {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .result-editor {
+      position: absolute;
+      inset: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .result-editor.active {
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .result-editor skir-code-mirror {
+      height: 100%;
+    }
+
+    .result-message {
+      margin: 0;
+      padding: 0.75rem;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+
+    .result-message.info {
+      color: var(--muted);
+      background: #f4f7ff;
+    }
+
+    .result-message.error {
+      color: #8d2b2b;
+      background: #ffeaea;
     }
 
     .result-controls {
@@ -353,12 +375,12 @@ export class App extends LitElement {
       <main class="app-shell">
         <header class="headline">
           <div class="title-wrap">
-            <h1>Skir Converter Workbench</h1>
+            <h1>Skir Format Converter</h1>
           </div>
         </header>
 
         <section class="top-row">
-          ${this.renderInputPanel()} ${this.renderSchemaPanel()}
+          ${this.renderSchemaPanel()} ${this.renderInputPanel()}
         </section>
 
         ${this.renderResultsPanel()}
@@ -370,7 +392,7 @@ export class App extends LitElement {
     return html`
       <section class="panel">
         <div class="panel-head">
-          <h2>Schema Panel</h2>
+          <h2>Schema</h2>
         </div>
 
         <div class="panel-body compact-area">
@@ -407,7 +429,7 @@ export class App extends LitElement {
             <skir-code-mirror
               id="input-value"
               .initialState=${EditorState.create({
-                extensions: [basicSetup(), tokyoNightDayTheme()],
+                extensions: [basicSetup(), tokyoNightDayTheme(), json()],
               })}
               @text-modified=${(): void => this.onValueTextModified()}
             ></skir-code-mirror>
@@ -432,6 +454,45 @@ export class App extends LitElement {
   }
 
   private renderResultsPanel(): TemplateResult {
+    const result = this.appState.result;
+
+    if (result.kind !== "ok") {
+      const infoMessage =
+        result.kind === "schema-not-set"
+          ? "Schema is not set yet. Paste a schema JSON to compute results."
+          : result.kind === "value-not-set"
+            ? "Input value is not set yet. Paste a value to compute results."
+            : undefined;
+
+      const errorMessage =
+        result.kind === "schema-error"
+          ? result.error
+          : result.kind === "value-parse-error"
+            ? result.error
+            : result.kind === "schema-value-match-error"
+              ? result.error
+              : undefined;
+
+      return html`
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Result Panel</h2>
+          </div>
+
+          <div class="panel-body">
+            <div class="result-panel-body">
+              ${infoMessage
+                ? html`<p class="result-message info">${infoMessage}</p>`
+                : ""}
+              ${errorMessage
+                ? html`<p class="result-message error">${errorMessage}</p>`
+                : ""}
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
     return html`
       <section class="panel">
         <div class="panel-head">
@@ -453,9 +514,7 @@ export class App extends LitElement {
               <button
                 class="copy-btn"
                 @click=${(): void => {
-                  navigator.clipboard.writeText(
-                    this.getResultPreview(this.resultTab),
-                  );
+                  navigator.clipboard.writeText(this.getResultText(result));
                   this.copied = true;
                   setTimeout(() => {
                     this.copied = false;
@@ -468,12 +527,46 @@ export class App extends LitElement {
           </div>
 
           <div class="result-panel-body">
-            <pre class="result-body">
-${this.getResultPreview(this.resultTab)}</pre
-            >
+            <div class="result-editors">
+              ${this.renderResultEditor(
+                "readable-json",
+                "result-readable-json",
+                result.readableJsonEditorState,
+              )}
+              ${this.renderResultEditor(
+                "dense-json",
+                "result-dense-json",
+                result.denseJsonEditorState,
+              )}
+              ${this.renderResultEditor(
+                "base16",
+                "result-base16",
+                result.base16EditorState,
+              )}
+              ${this.renderResultEditor(
+                "base64",
+                "result-base64",
+                result.base64EditorState,
+              )}
+            </div>
           </div>
         </div>
       </section>
+    `;
+  }
+
+  private renderResultEditor(
+    tab: "dense-json" | "readable-json" | "base16" | "base64",
+    id: string,
+    initialState: EditorState,
+  ): TemplateResult {
+    return html`
+      <div
+        class=${this.resultTab === tab ? "result-editor active" : "result-editor"}
+        aria-hidden=${this.resultTab === tab ? "false" : "true"}
+      >
+        <skir-code-mirror id=${id} .initialState=${initialState}></skir-code-mirror>
+      </div>
     `;
   }
 
@@ -494,19 +587,26 @@ ${this.getResultPreview(this.resultTab)}</pre
     `;
   }
 
-  private getResultPreview(
+  private getResultEditorState(
     tab: "dense-json" | "readable-json" | "base16" | "base64",
-  ): string {
+    result: Extract<AppState["result"], { kind: "ok" }>,
+  ): EditorState {
     if (tab === "dense-json") {
-      return '{"message":"hello","bytes":[72,101,108,108,111]}';
+      return result.denseJsonEditorState;
     }
     if (tab === "readable-json") {
-      return '{\n  "message": "hello",\n  "bytes": [72, 101, 108, 108, 111]\n}';
+      return result.readableJsonEditorState;
     }
     if (tab === "base16") {
-      return "48656c6c6f";
+      return result.base16EditorState;
     }
-    return "SGVsbG8=";
+    return result.base64EditorState;
+  }
+
+  private getResultText(
+    result: Extract<AppState["result"], { kind: "ok" }>,
+  ): string {
+    return this.getResultEditorState(this.resultTab, result).doc.toString();
   }
 
   updateState(): void {
@@ -534,6 +634,28 @@ ${this.getResultPreview(this.resultTab)}</pre
       oldState,
     );
     this.appState = newState;
+    void this.updateComplete.then(() => {
+      this.syncResultEditors(newState);
+    });
+  }
+
+  private syncResultEditors(state: AppState): void {
+    if (state.result.kind !== "ok") {
+      return;
+    }
+
+    if (this.resultReadableJsonElement) {
+      this.resultReadableJsonElement.state = state.result.readableJsonEditorState;
+    }
+    if (this.resultDenseJsonElement) {
+      this.resultDenseJsonElement.state = state.result.denseJsonEditorState;
+    }
+    if (this.resultBase16Element) {
+      this.resultBase16Element.state = state.result.base16EditorState;
+    }
+    if (this.resultBase64Element) {
+      this.resultBase64Element.state = state.result.base64EditorState;
+    }
   }
 
   private valueTextWasModified = false;
@@ -566,6 +688,14 @@ ${this.getResultPreview(this.resultTab)}</pre
   inputValueElement: CodeMirror | undefined;
   @query("#schema-json")
   inputSchemaElement: CodeMirror | undefined;
+  @query("#result-readable-json")
+  resultReadableJsonElement: CodeMirror | undefined;
+  @query("#result-dense-json")
+  resultDenseJsonElement: CodeMirror | undefined;
+  @query("#result-base16")
+  resultBase16Element: CodeMirror | undefined;
+  @query("#result-base64")
+  resultBase64Element: CodeMirror | undefined;
 
   @state()
   private appState = makeZeroState();

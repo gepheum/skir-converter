@@ -9,10 +9,28 @@ export class CodeMirror extends LitElement {
     :host {
       display: block;
       height: 100%;
+      min-height: 0;
     }
 
     #container {
       height: 100%;
+      min-height: 0;
+    }
+
+    #container .cm-editor {
+      height: 100%;
+    }
+
+    #container .cm-scroller {
+      height: 100%;
+    }
+
+    #container .cm-content {
+      min-height: 100%;
+    }
+
+    #container .cm-gutters {
+      display: none;
     }
   `;
 
