@@ -1,11 +1,11 @@
 // TODO: add number of UTF-8 bytes copied
 
+import { json } from "@codemirror/lang-json";
+import { EditorState } from "@codemirror/state";
+import { tokyoNightDay } from "@uiw/codemirror-theme-tokyo-night-day";
+import { basicSetup as codemirrorBasicSetup } from "codemirror";
 import { css, html, LitElement, TemplateResult } from "lit";
 import { customElement, query, state } from "lit/decorators.js";
-import { EditorState } from "@codemirror/state";
-import { basicSetup as codemirrorBasicSetup } from "codemirror";
-import { json } from "@codemirror/lang-json";
-import { tokyoNightDay } from "@uiw/codemirror-theme-tokyo-night-day";
 import { AppState, makeZeroState, updateAppState } from "./app-state";
 import "./code-mirror";
 import { CodeMirror } from "./code-mirror";
