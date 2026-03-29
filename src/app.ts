@@ -5,9 +5,9 @@ import { json } from "@codemirror/lang-json";
 import { EditorState } from "@codemirror/state";
 import { tokyoNightDay } from "@uiw/codemirror-theme-tokyo-night-day";
 import { basicSetup } from "codemirror";
-import { getModuleFromGithubUrl } from "skir/dist/get_dependencies_flow.js";
 import { css, html, LitElement, TemplateResult } from "lit";
 import { customElement, query, state } from "lit/decorators.js";
+import { getModuleFromGithubUrl } from "skir/dist/get_dependencies_flow.js";
 import { AppState, makeZeroState, updateAppState } from "./app-state";
 import "./code-mirror";
 import { CodeMirror } from "./code-mirror";
@@ -938,14 +938,12 @@ export class App extends LitElement {
       const githubResult = await getModuleFromGithubUrl(githubUrl, githubToken);
       if (githubResult.kind === "success") {
         const schemaText = JSON.stringify(
-          recordToTypeDefinition(
-          githubResult.record,
-          githubResult.moduleSet,
-          ),
+          recordToTypeDefinition(githubResult.record, githubResult.moduleSet),
           undefined,
           "  ",
         );
-        this.inputSchemaElement!.state = this.makeInputSchemaEditorState(schemaText);
+        this.inputSchemaElement!.state =
+          this.makeInputSchemaEditorState(schemaText);
         this.schemaOverlayDismissed = true;
         this.schemaTextWasModified = true;
         this.updateState();
@@ -1035,13 +1033,17 @@ declare global {
   }
 }
 
-type GithubState = {
-  kind: "initial";
-} | {
-  kind: "fetching";
-} | {
-  kind: "success";
-} | {
-  kind: "error";
-  error: string;
-}
+type GithubState =
+  | {
+      kind: "initial";
+    }
+  | {
+      kind: "fetching";
+    }
+  | {
+      kind: "success";
+    }
+  | {
+      kind: "error";
+      error: string;
+    };
