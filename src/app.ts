@@ -540,7 +540,7 @@ export class App extends LitElement {
                 this.schemaInputMode = "paste-json";
               }}
             >
-              Paste JSON
+              Type Descriptor
             </button>
             <button
               role="tab"
