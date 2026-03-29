@@ -308,7 +308,6 @@ export class App extends LitElement {
       border-radius: 12px;
       overflow: hidden;
       background: #f8faff;
-      min-height: 210px;
     }
 
     .result-editors {
@@ -324,7 +323,6 @@ export class App extends LitElement {
     }
 
     .result-editor skir-code-mirror {
-      min-height: 210px;
     }
 
     .result-message {
