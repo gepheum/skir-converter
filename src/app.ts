@@ -505,6 +505,10 @@ export class App extends LitElement {
         <header class="headline">
           <div class="title-wrap">
             <h1>Skir Format Converter</h1>
+            <p class="subtitle">
+              Convert values across dense JSON, readable JSON, and binary formats.
+              All conversion happens locally in your browser, and your data never leaves your device.
+            </p>
           </div>
         </header>
 
