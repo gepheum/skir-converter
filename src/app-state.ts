@@ -7,7 +7,6 @@ import { createEditorState, TypeDefinition } from "skir-codemirror-plugin";
 
 export interface InputValue {
   readonly text: string;
-  readonly format: "auto" | "json" | "base16" | "base64";
   readonly parsed:
     | {
         readonly kind: "not-set";
@@ -79,15 +78,13 @@ export interface AppState {
 
 export function updateAppState(
   valueText: string,
-  format: "auto" | "json" | "base16" | "base64",
   schemaText: string,
   previousState: AppState,
 ): AppState {
   const inputValue =
-    valueText === previousState.input.text &&
-    format === previousState.input.format
+    valueText === previousState.input.text
       ? previousState.input
-      : makeInputValue(valueText, format);
+      : makeInputValue(valueText);
   const inputSchema =
     schemaText === previousState.schema.text
       ? previousState.schema
@@ -103,7 +100,7 @@ export function updateAppState(
 }
 
 export function makeZeroState(): AppState {
-  const inputValue = makeInputValue("", "auto");
+  const inputValue = makeInputValue("");
   const inputSchema = makeInputSchema("");
   return {
     input: inputValue,
@@ -112,22 +109,19 @@ export function makeZeroState(): AppState {
   };
 }
 
-function makeInputValue(
-  text: string,
-  format: "auto" | "json" | "base16" | "base64",
-): InputValue {
+function makeInputValue(text: string): InputValue {
   if (text === "") {
-    return { text, format, parsed: { kind: "not-set" } };
+    return { text, parsed: { kind: "not-set" } };
   }
-  if (format === "auto") {
-    // The binary representation of a Skir value always starts with "skir" so we
-    // can check for this prefix in base16 and base64.
-    if (/^736[Bb]6972/.test(text)) format = "base16";
-    if (text.startsWith("c2tpc")) {
-      format = "base64";
-    } else {
-      format = "json";
-    }
+  let format: "json" | "base16" | "base64";
+  // The binary representation of a Skir value always starts with "skir" so we
+  // can check for this prefix in base16 and base64.
+  if (/^736[Bb]6972/.test(text)) {
+    format = "base16";
+  } else if (text.startsWith("c2tpc")) {
+    format = "base64";
+  } else {
+    format = "json";
   }
   let parsed: InputValue["parsed"];
   try {
@@ -155,7 +149,7 @@ function makeInputValue(
       error: e instanceof Error ? e.message : String(e),
     };
   }
-  return { text, format, parsed };
+  return { text, parsed };
 }
 
 function makeInputSchema(text: string): InputSchema {

@@ -677,20 +677,6 @@ export class App extends LitElement {
               @text-modified=${(): void => this.onValueTextModified()}
             ></skir-code-mirror>
           </div>
-
-          <div class="field">
-            <label for="input-format">Input format</label>
-            <select
-              id="input-format"
-              .value=${this.appState.input.format}
-              @change=${(): void => this.updateState()}
-            >
-              <option value="auto">Auto</option>
-              <option value="json">JSON</option>
-              <option value="base16">Binary (base 16)</option>
-              <option value="base64">Binary (base 64)</option>
-            </select>
-          </div>
         </div>
       </section>
     `;
@@ -866,8 +852,6 @@ export class App extends LitElement {
     } else {
       valueText = oldState.input.text;
     }
-    const inputFormat = this.inputKindElement!
-      .value as AppState["input"]["format"];
     let schemaText: string;
     if (this.schemaTextWasModified) {
       schemaText = this.inputSchemaElement!.state.doc.toString();
@@ -875,12 +859,7 @@ export class App extends LitElement {
     } else {
       schemaText = oldState.schema.text;
     }
-    const newState = updateAppState(
-      valueText,
-      inputFormat,
-      schemaText,
-      oldState,
-    );
+    const newState = updateAppState(valueText, schemaText, oldState);
     this.appState = newState;
     void this.updateComplete.then(() => {
       this.syncResultEditors(newState);
@@ -998,8 +977,6 @@ export class App extends LitElement {
     });
   }
 
-  @query("#input-format")
-  inputKindElement: HTMLSelectElement | undefined;
   @query("#input-value")
   inputValueElement: CodeMirror | undefined;
   @query("#schema-json")
