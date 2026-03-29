@@ -1,5 +1,4 @@
 // TODO: add number of UTF-8 bytes copied
-// TODO: rm format
 
 import { json } from "@codemirror/lang-json";
 import { EditorState } from "@codemirror/state";
@@ -112,6 +111,12 @@ export class App extends LitElement {
       overflow: hidden;
     }
 
+    .top-panel {
+      display: flex;
+      flex-direction: column;
+      height: 320px;
+    }
+
     .panel-head {
       border-bottom: 1px solid var(--line);
       padding: 0.7rem 0.9rem;
@@ -141,6 +146,11 @@ export class App extends LitElement {
       display: flex;
       flex-direction: column;
       gap: 0.8rem;
+    }
+
+    .top-panel .panel-body {
+      flex: 1;
+      min-height: 0;
     }
 
     .tab-row {
@@ -179,6 +189,11 @@ export class App extends LitElement {
 
     .editor-field {
       position: relative;
+    }
+
+    .top-panel .editor-field {
+      flex: 1;
+      min-height: 0;
     }
 
     .editor-overlay {
@@ -247,10 +262,6 @@ export class App extends LitElement {
       min-height: 138px;
     }
 
-    .compact-area skir-code-mirror {
-      height: 80px;
-    }
-
     .skir-view {
       min-height: 188px;
       border: 1px solid var(--line);
@@ -298,30 +309,22 @@ export class App extends LitElement {
       overflow: hidden;
       background: #f8faff;
       min-height: 210px;
-      display: flex;
-      flex-direction: column;
     }
 
     .result-editors {
-      position: relative;
-      flex: 1;
-      min-height: 0;
+      display: block;
     }
 
     .result-editor {
-      position: absolute;
-      inset: 0;
-      visibility: hidden;
-      pointer-events: none;
+      display: none;
     }
 
     .result-editor.active {
-      visibility: visible;
-      pointer-events: auto;
+      display: block;
     }
 
     .result-editor skir-code-mirror {
-      height: 100%;
+      min-height: 210px;
     }
 
     .result-message {
@@ -525,7 +528,7 @@ export class App extends LitElement {
       | undefined,
   ): TemplateResult {
     return html`
-      <section class="panel">
+      <section class="panel top-panel">
         <div class="panel-head">
           <h2>Schema</h2>
         </div>
@@ -572,6 +575,7 @@ export class App extends LitElement {
                 `}
             <skir-code-mirror
               id="schema-json"
+              fill-height
               .initialState=${this.makeInputSchemaEditorState("")}
               @text-modified=${(): void => this.onSchemaTextModified()}
             ></skir-code-mirror>
@@ -647,7 +651,7 @@ export class App extends LitElement {
 
   private renderInputPanel(): TemplateResult {
     return html`
-      <section class="panel">
+      <section class="panel top-panel">
         <div class="panel-head">
           <h2>Input</h2>
         </div>
@@ -671,6 +675,7 @@ export class App extends LitElement {
                 `}
             <skir-code-mirror
               id="input-value"
+              fill-height
               .initialState=${EditorState.create({
                 extensions: [basicSetup, tokyoNightDay, json()],
               })}

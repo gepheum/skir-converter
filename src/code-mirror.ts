@@ -8,20 +8,34 @@ export class CodeMirror extends LitElement {
   static override styles = css`
     :host {
       display: block;
-      height: 100%;
       min-height: 0;
+    }
+
+    :host([fill-height]) {
+      height: 100%;
     }
 
     #container {
-      height: 100%;
       min-height: 0;
     }
 
+    :host([fill-height]) #container {
+      height: 100%;
+    }
+
     #container .cm-editor {
+      min-height: 100%;
+    }
+
+    :host([fill-height]) #container .cm-editor {
       height: 100%;
     }
 
     #container .cm-scroller {
+      min-height: 100%;
+    }
+
+    :host([fill-height]) #container .cm-scroller {
       height: 100%;
     }
 
@@ -40,6 +54,9 @@ export class CodeMirror extends LitElement {
 
   @property({ type: Object })
   initialState: EditorState = EditorState.create({});
+
+  @property({ type: Boolean, reflect: true, attribute: "fill-height" })
+  fillHeight = false;
 
   override firstUpdated(): void {
     const container = this.renderRoot.querySelector("#container");
