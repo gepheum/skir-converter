@@ -3,15 +3,12 @@
 import { json } from "@codemirror/lang-json";
 import { EditorState } from "@codemirror/state";
 import { tokyoNightDay } from "@uiw/codemirror-theme-tokyo-night-day";
-import { basicSetup as codemirrorBasicSetup } from "codemirror";
+import { basicSetup } from "codemirror";
 import { css, html, LitElement, TemplateResult } from "lit";
 import { customElement, query, state } from "lit/decorators.js";
 import { AppState, makeZeroState, updateAppState } from "./app-state";
 import "./code-mirror";
 import { CodeMirror } from "./code-mirror";
-
-const basicSetup = () => codemirrorBasicSetup;
-const tokyoNightDayTheme = () => tokyoNightDay;
 
 @customElement("skir-converter-app")
 export class App extends LitElement {
@@ -379,6 +376,45 @@ export class App extends LitElement {
       gap: 0.5rem;
     }
 
+    .schema-mode-hint {
+      margin: 0;
+      font-size: 0.74rem;
+      color: var(--muted);
+      font-family: "IBM Plex Mono", monospace;
+    }
+
+    .field-label-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .field-help-link {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.66rem;
+      color: var(--muted);
+      text-decoration: underline;
+    }
+
+    .github-fetch-btn {
+      align-self: flex-start;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f0f4ff;
+      color: var(--ink);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.78rem;
+      padding: 0.38rem 0.72rem;
+      cursor: pointer;
+      transition: background-color 120ms ease, border-color 120ms ease;
+    }
+
+    .github-fetch-btn:hover {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+    }
+
     @media (max-width: 930px) {
       .top-row {
         grid-template-columns: 1fr;
@@ -403,6 +439,15 @@ export class App extends LitElement {
 
   @state()
   private valueOverlayDismissed = false;
+
+  @state()
+  private schemaInputMode: "paste-json" | "github" = "paste-json";
+
+  @state()
+  private githubUrl = "";
+
+  @state()
+  private githubToken = "";
 
   override render(): TemplateResult {
     return html`
@@ -430,34 +475,92 @@ export class App extends LitElement {
         </div>
 
         <div class="panel-body compact-area">
-          <div class="field editor-field">
-            ${this.schemaOverlayDismissed
-              ? ""
-              : html`
-                  <div
-                    class="editor-overlay"
-                    @click=${(): void => {
-                      this.dismissOverlay("schema");
-                    }}
-                  >
-                    <span>Paste the type descriptor JSON</span>
+          <div class="tab-row" role="tablist" aria-label="Schema input mode">
+            <button
+              role="tab"
+              aria-selected=${this.schemaInputMode === "paste-json"}
+              @click=${(): void => {
+                this.schemaInputMode = "paste-json";
+              }}
+            >
+              Paste JSON
+            </button>
+            <button
+              role="tab"
+              aria-selected=${this.schemaInputMode === "github"}
+              @click=${(): void => {
+                this.schemaInputMode = "github";
+              }}
+            >
+              GitHub
+            </button>
+          </div>
+
+          ${this.schemaInputMode === "paste-json"
+            ? html`
+                <div class="field editor-field">
+                  ${this.schemaOverlayDismissed
+                    ? ""
+                    : html`
+                        <div
+                          class="editor-overlay"
+                          @click=${(): void => {
+                            this.dismissOverlay("schema");
+                          }}
+                        >
+                          <span>Paste the type descriptor JSON</span>
+                        </div>
+                      `}
+                  <skir-code-mirror
+                    id="schema-json"
+                    .initialState=${EditorState.create({
+                      extensions: [basicSetup, tokyoNightDay, json()],
+                    })}
+                    @text-modified=${(): void => this.onSchemaTextModified()}
+                  ></skir-code-mirror>
+                </div>
+              `
+            : html`
+                <div class="field">
+                  <div class="field-label-row">
+                    <label for="github-url">GitHub file URL</label>
+                    <a
+                      class="field-help-link"
+                      href="https://github.com/gepheum/skir-fantasy-game-example/blob/v1.0.0/skir-src/fantasy_game.skir#L6"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >Example</a
+                    >
                   </div>
-                `}
-            <skir-code-mirror
-              id="schema-json"
-              .initialState=${EditorState.create({
-                extensions: [basicSetup(), tokyoNightDayTheme(), json()],
-              })}
-              @text-modified=${(): void => this.onSchemaTextModified()}
-            ></skir-code-mirror>
-          </div>
+                  <input
+                    id="github-url"
+                    type="url"
+                    .value=${this.githubUrl}
+                    @input=${(event: Event): void => {
+                      this.githubUrl = (event.target as HTMLInputElement).value;
+                    }}
+                    placeholder="Link to specific line in .skir file"
+                  />
+                </div>
 
-          <div class="divider"></div>
+                <div class="field">
+                  <label for="github-token"
+                    >GitHub token (optional, risky)</label
+                  >
+                  <input
+                    id="github-token"
+                    type="password"
+                    .value=${this.githubToken}
+                    @input=${(event: Event): void => {
+                      this.githubToken = (
+                        event.target as HTMLInputElement
+                      ).value;
+                    }}
+                  />
+                </div>
 
-          <div class="field">
-            <label for="github-url">GitHub URL (optional)</label>
-            <input id="github-url" type="url" />
-          </div>
+                <button class="github-fetch-btn" type="button">Fetch</button>
+              `}
         </div>
       </section>
     `;
@@ -490,7 +593,7 @@ export class App extends LitElement {
             <skir-code-mirror
               id="input-value"
               .initialState=${EditorState.create({
-                extensions: [basicSetup(), tokyoNightDayTheme(), json()],
+                extensions: [basicSetup, tokyoNightDay, json()],
               })}
               @text-modified=${(): void => this.onValueTextModified()}
             ></skir-code-mirror>

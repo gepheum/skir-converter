@@ -44,8 +44,9 @@
     "lit": "^3.2.0",
     "nanoevents": "^9.1.0",
     "skir": "^1.0.28",
+    "skir-internal": "^0.2.19",
     "skir-client": "^1.0.12",
-    "skir-codemirror-plugin": "github:gepheum/skir-codemirror-plugin"
+    "skir-codemirror-plugin": "^1.0.1"
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "^0.6.3",
