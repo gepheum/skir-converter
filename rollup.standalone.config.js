@@ -7,7 +7,7 @@ export default {
   output: {
     file: 'dist/skir-converter-standalone.js',
     format: 'iife',
-    name: 'SkirConverter',
+    name: 'SkirFormatConverter',
     sourcemap: true
   },
   plugins: [

@@ -1,17 +1,17 @@
 {
-  "name": "skir-format-converter",
+  "name": "skir-converter",
   "version": "0.1.0",
   "description": "",
-  "homepage": "https://github.com/gepheum/skir-format-converter#readme",
+  "homepage": "https://github.com/gepheum/skir-converter#readme",
   "bugs": {
-    "url": "https://github.com/gepheum/skir-format-converter/issues"
+    "url": "https://github.com/gepheum/skir-converter/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gepheum/skir-format-converter.git"
+    "url": "git+https://github.com/gepheum/skir-converter.git"
   },
   "files": [
-    "dist/skir-format-converter-standalone.js",
+    "dist/skir-converter-standalone.js",
     "src/",
     "README.md"
   ],

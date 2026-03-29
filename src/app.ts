@@ -339,9 +339,6 @@ export class App extends LitElement {
       display: block;
     }
 
-    .result-editor skir-code-mirror {
-    }
-
     .result-message {
       margin: 0;
       padding: 0.75rem;
