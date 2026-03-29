@@ -78,6 +78,17 @@ export class App extends LitElement {
       gap: 0.25rem;
     }
 
+    .headline-link {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .headline-link:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+      border-radius: 6px;
+    }
+
     h1 {
       margin: 0;
       font-size: 1.18rem;
@@ -504,10 +515,13 @@ export class App extends LitElement {
       <main class="app-shell">
         <header class="headline">
           <div class="title-wrap">
-            <h1>Skir Format Converter</h1>
+            <a class="headline-link" href="https://build.skir/converter">
+              <h1>Skir Format Converter</h1>
+            </a>
             <p class="subtitle">
-              Convert values across dense JSON, readable JSON, and binary formats.
-              All conversion happens locally in your browser, and your data never leaves your device.
+              Convert values across dense JSON, readable JSON, and binary
+              formats. All conversion happens locally in your browser, and your
+              data never leaves your device.
             </p>
           </div>
         </header>
@@ -670,9 +684,9 @@ export class App extends LitElement {
                     }}
                   >
                     <span
-                      >Paste the value in JSON or binary form (base16 or
-                      base64)</span
-                    >
+                      >Paste the value in JSON form (dense or readale) or binary
+                      form (base16 or base64)
+                    </span>
                   </div>
                 `}
             <skir-code-mirror
