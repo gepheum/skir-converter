@@ -15,31 +15,29 @@ import { recordToTypeDefinition } from "./record-to-type-definition";
 @customElement("skir-converter-app")
 export class App extends LitElement {
   static override styles = css`
-    @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+    @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 
     :host {
       --bg: #d5d6db;
-      --panel: #e9e9ef;
+      --bg-panel: #e9e9ef;
+      --bg-panel-2: #e2e3e9;
       --ink: #3760bf;
-      --muted: #6172b0;
+      --muted: #5a6aa6;
       --line: #b7c5e3;
       --accent: #2e7de9;
-      --accent-soft: #dbe8ff;
+      --accent-soft: #d9e8ff;
       --warm: #c64343;
-      --warm-soft: #f7d7d7;
+      --warm-soft: #ffe4e4;
       --ok: #587539;
 
       display: block;
       min-height: 100vh;
-      background: radial-gradient(
-          circle at top right,
-          #c4d5ff 0%,
-          transparent 38%
-        ),
-        radial-gradient(circle at bottom left, #d3f0e7 0%, transparent 44%),
-        var(--bg);
+      background:
+        radial-gradient(circle at 10% -10%, #eef4ff 0%, transparent 35%),
+        radial-gradient(circle at 92% 0%, #d8e6ff 0%, transparent 30%),
+        linear-gradient(180deg, #d9dbe2 0%, var(--bg) 100%);
       color: var(--ink);
-      font-family: "Space Grotesk", "Avenir Next", sans-serif;
+      font-family: "JetBrains Mono", monospace;
     }
 
     * {
@@ -63,13 +61,14 @@ export class App extends LitElement {
 
     .headline {
       border: 1px solid var(--line);
-      border-radius: 14px;
-      background: linear-gradient(120deg, #f4f6ff, #e8ecf9);
+      border-radius: 12px;
+      background: linear-gradient(180deg, #f0f4ff, #e4e9f8);
       padding: 0.95rem 1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
+      box-shadow: 0 10px 28px rgba(55, 96, 191, 0.1);
     }
 
     .title-wrap {
@@ -91,14 +90,16 @@ export class App extends LitElement {
 
     h1 {
       margin: 0;
-      font-size: 1.18rem;
-      letter-spacing: 0.01em;
+      font-size: 1.08rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
 
     .subtitle {
       margin: 0;
       color: var(--muted);
-      font-size: 0.86rem;
+      font-size: 0.78rem;
+      line-height: 1.5;
     }
 
     .pill {
@@ -116,9 +117,9 @@ export class App extends LitElement {
 
     .panel {
       border: 1px solid var(--line);
-      border-radius: 14px;
-      background: var(--panel);
-      box-shadow: 0 8px 24px rgba(55, 96, 191, 0.08);
+      border-radius: 12px;
+      background: var(--bg-panel);
+      box-shadow: 0 8px 22px rgba(55, 96, 191, 0.08);
       overflow: hidden;
     }
 
@@ -135,14 +136,14 @@ export class App extends LitElement {
       align-items: center;
       justify-content: space-between;
       gap: 0.75rem;
-      background: #e4e9f6;
+      background: var(--bg-panel-2);
     }
 
     .panel-head h2 {
       margin: 0;
-      font-size: 0.9rem;
+      font-size: 0.82rem;
       text-transform: uppercase;
-      letter-spacing: 0.09em;
+      letter-spacing: 0.1em;
     }
 
     .panel-head p {
@@ -168,28 +169,30 @@ export class App extends LitElement {
       display: inline-flex;
       width: fit-content;
       border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 0.2rem;
-      background: #dde6fa;
+      border-radius: 8px;
+      padding: 0.15rem;
+      background: #dde4f4;
       gap: 0.2rem;
     }
 
     .tab-row button {
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       padding: 0.4rem 0.7rem;
       min-width: 7.5rem;
       cursor: pointer;
       background: transparent;
       color: var(--muted);
-      font-family: "IBM Plex Mono", monospace;
+      font-family: "JetBrains Mono", monospace;
       font-size: 0.77rem;
-      transition: background-color 120ms ease, color 120ms ease;
+      transition: background-color 120ms ease, color 120ms ease,
+        box-shadow 120ms ease;
     }
 
     .tab-row button[aria-selected="true"] {
       background: var(--accent);
       color: #fff;
+      box-shadow: 0 0 0 1px rgba(46, 125, 233, 0.25) inset;
     }
 
     .field {
@@ -217,9 +220,9 @@ export class App extends LitElement {
       padding: 0.9rem;
       border: 1px solid rgba(183, 197, 227, 0.92);
       border-radius: 10px;
-      background: rgba(248, 250, 255, 0.5);
+      background: rgba(248, 250, 255, 0.55);
       color: var(--ink);
-      font-family: "IBM Plex Mono", monospace;
+      font-family: "JetBrains Mono", monospace;
       font-size: 0.8rem;
       line-height: 1.5;
       text-align: center;
@@ -236,7 +239,7 @@ export class App extends LitElement {
       text-transform: uppercase;
       letter-spacing: 0.1em;
       color: var(--muted);
-      font-family: "IBM Plex Mono", monospace;
+      font-family: "JetBrains Mono", monospace;
     }
 
     textarea,
@@ -244,12 +247,12 @@ export class App extends LitElement {
     select {
       width: 100%;
       border: 1px solid var(--line);
-      border-radius: 10px;
-      background: #f8faff;
+      border-radius: 8px;
+      background: #f5f8ff;
       color: var(--ink);
       padding: 0.62rem 0.7rem;
-      font-size: 0.9rem;
-      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.84rem;
+      font-family: "JetBrains Mono", monospace;
       outline: none;
       transition: border-color 120ms ease, box-shadow 120ms ease;
     }
@@ -293,7 +296,7 @@ export class App extends LitElement {
       justify-content: space-between;
       align-items: center;
       gap: 0.5rem;
-      font-family: "IBM Plex Mono", monospace;
+      font-family: "JetBrains Mono", monospace;
       font-size: 0.78rem;
     }
 
@@ -318,7 +321,7 @@ export class App extends LitElement {
       border: 1px solid var(--line);
       border-radius: 12px;
       overflow: hidden;
-      background: #f8faff;
+      background: #f5f8ff;
     }
 
     .result-editors {
@@ -339,7 +342,7 @@ export class App extends LitElement {
     .result-message {
       margin: 0;
       padding: 0.75rem;
-      font-family: "IBM Plex Mono", monospace;
+      font-family: "JetBrains Mono", monospace;
       font-size: 0.8rem;
       line-height: 1.5;
     }
@@ -366,11 +369,12 @@ export class App extends LitElement {
       border-radius: 8px;
       background: #f0f4ff;
       color: var(--muted);
-      font-family: "IBM Plex Mono", monospace;
+      font-family: "JetBrains Mono", monospace;
       font-size: 0.72rem;
       padding: 0.3rem 0.65rem;
       cursor: pointer;
-      transition: background-color 120ms ease, color 120ms ease;
+      transition: background-color 120ms ease, color 120ms ease,
+        border-color 120ms ease;
     }
 
     .copy-btn:hover {
@@ -380,7 +384,7 @@ export class App extends LitElement {
     }
 
     .copy-confirmation {
-      font-family: "IBM Plex Mono", monospace;
+      font-family: "JetBrains Mono", monospace;
       font-size: 0.72rem;
       color: var(--ok);
     }
@@ -395,7 +399,7 @@ export class App extends LitElement {
       margin: 0;
       font-size: 0.74rem;
       color: var(--muted);
-      font-family: "IBM Plex Mono", monospace;
+      font-family: "JetBrains Mono", monospace;
     }
 
     .field-label-row {
@@ -406,7 +410,7 @@ export class App extends LitElement {
     }
 
     .field-help-link {
-      font-family: "IBM Plex Mono", monospace;
+      font-family: "JetBrains Mono", monospace;
       font-size: 0.66rem;
       color: var(--muted);
       text-decoration: underline;
@@ -424,7 +428,7 @@ export class App extends LitElement {
       border-radius: 8px;
       background: #f0f4ff;
       color: var(--ink);
-      font-family: "IBM Plex Mono", monospace;
+      font-family: "JetBrains Mono", monospace;
       font-size: 0.78rem;
       padding: 0.38rem 0.72rem;
       cursor: pointer;
@@ -451,7 +455,7 @@ export class App extends LitElement {
     }
 
     .github-fetch-status {
-      font-family: "IBM Plex Mono", monospace;
+      font-family: "JetBrains Mono", monospace;
       font-size: 0.72rem;
       line-height: 1.4;
     }
@@ -520,8 +524,7 @@ export class App extends LitElement {
             </a>
             <p class="subtitle">
               Convert values across dense JSON, readable JSON, and binary
-              formats. All conversion happens locally in your browser, and your
-              data never leaves your device.
+              formats. All conversion happens locally in your browser.
             </p>
           </div>
         </header>
