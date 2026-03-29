@@ -481,7 +481,10 @@ export class App extends LitElement {
                       this.dismissOverlay("value");
                     }}
                   >
-                    <span>Paste the value in JSON or binary form (base16 or base64)</span>
+                    <span
+                      >Paste the value in JSON or binary form (base16 or
+                      base64)</span
+                    >
                   </div>
                 `}
             <skir-code-mirror
