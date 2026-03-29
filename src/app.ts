@@ -177,6 +177,34 @@ export class App extends LitElement {
       gap: 0.36rem;
     }
 
+    .editor-field {
+      position: relative;
+    }
+
+    .editor-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.9rem;
+      border: 1px solid rgba(183, 197, 227, 0.92);
+      border-radius: 10px;
+      background: rgba(248, 250, 255, 0.5);
+      color: var(--ink);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      text-align: center;
+      cursor: text;
+      backdrop-filter: blur(2px);
+    }
+
+    .editor-overlay span {
+      max-width: 22rem;
+    }
+
     .field label {
       font-size: 0.72rem;
       text-transform: uppercase;
@@ -370,6 +398,12 @@ export class App extends LitElement {
   @state()
   private copied = false;
 
+  @state()
+  private schemaOverlayDismissed = false;
+
+  @state()
+  private valueOverlayDismissed = false;
+
   override render(): TemplateResult {
     return html`
       <main class="app-shell">
@@ -396,7 +430,19 @@ export class App extends LitElement {
         </div>
 
         <div class="panel-body compact-area">
-          <div class="field">
+          <div class="field editor-field">
+            ${this.schemaOverlayDismissed
+              ? ""
+              : html`
+                  <div
+                    class="editor-overlay"
+                    @click=${(): void => {
+                      this.dismissOverlay("schema");
+                    }}
+                  >
+                    <span>Paste the type descriptor JSON</span>
+                  </div>
+                `}
             <skir-code-mirror
               id="schema-json"
               .initialState=${EditorState.create({
@@ -421,11 +467,23 @@ export class App extends LitElement {
     return html`
       <section class="panel">
         <div class="panel-head">
-          <h2>Input + Conversion Panel</h2>
+          <h2>Input</h2>
         </div>
 
         <div class="panel-body compact-area">
-          <div class="field">
+          <div class="field editor-field">
+            ${this.valueOverlayDismissed
+              ? ""
+              : html`
+                  <div
+                    class="editor-overlay"
+                    @click=${(): void => {
+                      this.dismissOverlay("value");
+                    }}
+                  >
+                    <span>Paste the value in JSON or binary form (base16 or base64)</span>
+                  </div>
+                `}
             <skir-code-mirror
               id="input-value"
               .initialState=${EditorState.create({
@@ -461,17 +519,17 @@ export class App extends LitElement {
         result.kind === "schema-not-set"
           ? "Schema is not set yet. Paste a schema JSON to compute results."
           : result.kind === "value-not-set"
-            ? "Input value is not set yet. Paste a value to compute results."
-            : undefined;
+          ? "Value is not set yet. Paste a value to compute results."
+          : undefined;
 
       const errorMessage =
         result.kind === "schema-error"
           ? result.error
           : result.kind === "value-parse-error"
-            ? result.error
-            : result.kind === "schema-value-match-error"
-              ? result.error
-              : undefined;
+          ? result.error
+          : result.kind === "schema-value-match-error"
+          ? result.error
+          : undefined;
 
       return html`
         <section class="panel">
@@ -562,10 +620,15 @@ export class App extends LitElement {
   ): TemplateResult {
     return html`
       <div
-        class=${this.resultTab === tab ? "result-editor active" : "result-editor"}
+        class=${this.resultTab === tab
+          ? "result-editor active"
+          : "result-editor"}
         aria-hidden=${this.resultTab === tab ? "false" : "true"}
       >
-        <skir-code-mirror id=${id} .initialState=${initialState}></skir-code-mirror>
+        <skir-code-mirror
+          id=${id}
+          .initialState=${initialState}
+        ></skir-code-mirror>
       </div>
     `;
   }
@@ -645,7 +708,8 @@ export class App extends LitElement {
     }
 
     if (this.resultReadableJsonElement) {
-      this.resultReadableJsonElement.state = state.result.readableJsonEditorState;
+      this.resultReadableJsonElement.state =
+        state.result.readableJsonEditorState;
     }
     if (this.resultDenseJsonElement) {
       this.resultDenseJsonElement.state = state.result.denseJsonEditorState;
@@ -680,6 +744,21 @@ export class App extends LitElement {
       this.stateUpdateTimeoutHandle = undefined;
       this.updateState();
     }, 100);
+  }
+
+  private dismissOverlay(kind: "schema" | "value"): void {
+    if (kind === "schema") {
+      this.schemaOverlayDismissed = true;
+      requestAnimationFrame(() => {
+        this.inputSchemaElement?.view.focus();
+      });
+      return;
+    }
+
+    this.valueOverlayDismissed = true;
+    requestAnimationFrame(() => {
+      this.inputValueElement?.view.focus();
+    });
   }
 
   @query("#input-format")
