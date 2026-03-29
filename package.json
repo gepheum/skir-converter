@@ -43,7 +43,7 @@
     "codemirror": "^6.0.2",
     "lit": "^3.2.0",
     "nanoevents": "^9.1.0",
-    "skir": "^1.0.28",
+    "skir": "^1.1.29",
     "skir-internal": "^0.2.19",
     "skir-client": "^1.0.12",
     "skir-codemirror-plugin": "^1.0.1"

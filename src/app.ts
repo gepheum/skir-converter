@@ -1,14 +1,17 @@
 // TODO: add number of UTF-8 bytes copied
+// TODO: rm format
 
 import { json } from "@codemirror/lang-json";
 import { EditorState } from "@codemirror/state";
 import { tokyoNightDay } from "@uiw/codemirror-theme-tokyo-night-day";
 import { basicSetup } from "codemirror";
+import { getModuleFromGithubUrl } from "skir/dist/get_dependencies_flow.js";
 import { css, html, LitElement, TemplateResult } from "lit";
 import { customElement, query, state } from "lit/decorators.js";
 import { AppState, makeZeroState, updateAppState } from "./app-state";
 import "./code-mirror";
 import { CodeMirror } from "./code-mirror";
+import { recordToTypeDefinition } from "./record-to-type-definition";
 
 @customElement("skir-converter-app")
 export class App extends LitElement {
@@ -397,6 +400,12 @@ export class App extends LitElement {
       text-decoration: underline;
     }
 
+    .github-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
     .github-fetch-btn {
       align-self: flex-start;
       border: 1px solid var(--line);
@@ -413,6 +422,34 @@ export class App extends LitElement {
     .github-fetch-btn:hover {
       background: var(--accent-soft);
       border-color: var(--accent);
+    }
+
+    .github-fetch-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background: #eef1f8;
+      border-color: var(--line);
+    }
+
+    .github-fetch-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .github-fetch-status {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.72rem;
+      line-height: 1.4;
+    }
+
+    .github-fetch-status.success {
+      color: var(--ok);
+    }
+
+    .github-fetch-status.error {
+      color: var(--warm);
     }
 
     @media (max-width: 930px) {
@@ -450,6 +487,18 @@ export class App extends LitElement {
   private githubToken = "";
 
   override render(): TemplateResult {
+    type GithubFetchStatus =
+      | { kind: "success"; message: string }
+      | { kind: "error"; message: string };
+
+    const githubFetchDisabled = this.githubState.kind === "fetching";
+    const githubFetchStatus: GithubFetchStatus | undefined =
+      this.githubState.kind === "success"
+        ? { kind: "success", message: "Fetched schema from GitHub." }
+        : this.githubState.kind === "error"
+        ? { kind: "error", message: this.githubState.error }
+        : undefined;
+
     return html`
       <main class="app-shell">
         <header class="headline">
@@ -459,7 +508,8 @@ export class App extends LitElement {
         </header>
 
         <section class="top-row">
-          ${this.renderSchemaPanel()} ${this.renderInputPanel()}
+          ${this.renderSchemaPanel(githubFetchDisabled, githubFetchStatus)}
+          ${this.renderInputPanel()}
         </section>
 
         ${this.renderResultsPanel()}
@@ -467,7 +517,13 @@ export class App extends LitElement {
     `;
   }
 
-  private renderSchemaPanel(): TemplateResult {
+  private renderSchemaPanel(
+    githubFetchDisabled: boolean,
+    githubFetchStatus:
+      | { kind: "success"; message: string }
+      | { kind: "error"; message: string }
+      | undefined,
+  ): TemplateResult {
     return html`
       <section class="panel">
         <div class="panel-head">
@@ -496,71 +552,94 @@ export class App extends LitElement {
             </button>
           </div>
 
-          ${this.schemaInputMode === "paste-json"
-            ? html`
-                <div class="field editor-field">
-                  ${this.schemaOverlayDismissed
-                    ? ""
-                    : html`
-                        <div
-                          class="editor-overlay"
-                          @click=${(): void => {
-                            this.dismissOverlay("schema");
-                          }}
-                        >
-                          <span>Paste the type descriptor JSON</span>
-                        </div>
-                      `}
-                  <skir-code-mirror
-                    id="schema-json"
-                    .initialState=${EditorState.create({
-                      extensions: [basicSetup, tokyoNightDay, json()],
-                    })}
-                    @text-modified=${(): void => this.onSchemaTextModified()}
-                  ></skir-code-mirror>
-                </div>
-              `
-            : html`
-                <div class="field">
-                  <div class="field-label-row">
-                    <label for="github-url">GitHub file URL</label>
-                    <a
-                      class="field-help-link"
-                      href="https://github.com/gepheum/skir-fantasy-game-example/blob/v1.0.0/skir-src/fantasy_game.skir#L6"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      >Example</a
-                    >
-                  </div>
-                  <input
-                    id="github-url"
-                    type="url"
-                    .value=${this.githubUrl}
-                    @input=${(event: Event): void => {
-                      this.githubUrl = (event.target as HTMLInputElement).value;
+          <div
+            class="field editor-field"
+            style=${this.schemaInputMode === "paste-json"
+              ? "display: flex"
+              : "display: none"}
+          >
+            ${this.schemaOverlayDismissed
+              ? ""
+              : html`
+                  <div
+                    class="editor-overlay"
+                    @click=${(): void => {
+                      this.dismissOverlay("schema");
                     }}
-                    placeholder="Link to specific line in .skir file"
-                  />
-                </div>
-
-                <div class="field">
-                  <label for="github-token"
-                    >GitHub token (optional, risky)</label
                   >
-                  <input
-                    id="github-token"
-                    type="password"
-                    .value=${this.githubToken}
-                    @input=${(event: Event): void => {
-                      this.githubToken = (
-                        event.target as HTMLInputElement
-                      ).value;
-                    }}
-                  />
-                </div>
+                    <span>Paste the type descriptor JSON</span>
+                  </div>
+                `}
+            <skir-code-mirror
+              id="schema-json"
+              .initialState=${this.makeInputSchemaEditorState("")}
+              @text-modified=${(): void => this.onSchemaTextModified()}
+            ></skir-code-mirror>
+          </div>
 
-                <button class="github-fetch-btn" type="button">Fetch</button>
-              `}
+          <div
+            class="github-fields"
+            style=${this.schemaInputMode === "github"
+              ? "display: flex"
+              : "display: none"}
+          >
+            <div class="field">
+              <div class="field-label-row">
+                <label for="github-url">GitHub file URL</label>
+                <a
+                  class="field-help-link"
+                  href="https://github.com/gepheum/skir-fantasy-game-example/blob/v1.0.0/skir-src/fantasy_game.skir#L123"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Example</a
+                >
+              </div>
+              <input
+                id="github-url"
+                type="url"
+                .value=${this.githubUrl}
+                @input=${(event: Event): void => {
+                  this.githubUrl = (event.target as HTMLInputElement).value;
+                }}
+                placeholder="Link to specific line in .skir file"
+              />
+            </div>
+
+            <div class="field">
+              <label for="github-token">GitHub token (optional, risky)</label>
+              <input
+                id="github-token"
+                type="password"
+                .value=${this.githubToken}
+                @input=${(event: Event): void => {
+                  this.githubToken = (event.target as HTMLInputElement).value;
+                }}
+              />
+            </div>
+
+            <div class="github-fetch-row">
+              <button
+                class="github-fetch-btn"
+                type="button"
+                ?disabled=${githubFetchDisabled}
+                @click=${this.onGithubFetch}
+              >
+                Fetch
+              </button>
+              ${githubFetchStatus
+                ? html`
+                    <span
+                      class="github-fetch-status ${githubFetchStatus.kind}"
+                      role=${githubFetchStatus.kind === "error"
+                        ? "alert"
+                        : "status"}
+                    >
+                      ${githubFetchStatus.message}
+                    </span>
+                  `
+                : ""}
+            </div>
+          </div>
         </div>
       </section>
     `;
@@ -640,7 +719,7 @@ export class App extends LitElement {
       return html`
         <section class="panel">
           <div class="panel-head">
-            <h2>Result Panel</h2>
+            <h2>Result</h2>
           </div>
 
           <div class="panel-body">
@@ -842,6 +921,53 @@ export class App extends LitElement {
     this.scheduleStateUpdate();
   }
 
+  private async onGithubFetch(): Promise<void> {
+    this.githubState = { kind: "fetching" };
+    const githubUrl = this.githubUrlElement!.value;
+    const githubToken = this.githubTokenElement!.value;
+    const onError = (message: string): void => {
+      const newGithubState: GithubState = { kind: "error", error: message };
+      this.githubState = newGithubState;
+      window.setTimeout(() => {
+        if (this.githubState === newGithubState) {
+          this.githubState = { kind: "initial" };
+        }
+      }, 4000);
+    };
+    try {
+      const githubResult = await getModuleFromGithubUrl(githubUrl, githubToken);
+      if (githubResult.kind === "success") {
+        const schemaText = JSON.stringify(
+          recordToTypeDefinition(
+          githubResult.record,
+          githubResult.moduleSet,
+          ),
+          undefined,
+          "  ",
+        );
+        this.inputSchemaElement!.state = this.makeInputSchemaEditorState(schemaText);
+        this.schemaOverlayDismissed = true;
+        this.schemaTextWasModified = true;
+        this.updateState();
+        const newGithubState: GithubState = { kind: "success" };
+        this.githubState = newGithubState;
+        window.setTimeout(() => {
+          if (this.githubState === newGithubState) {
+            this.githubState = { kind: "initial" };
+          }
+        }, 2000);
+      } else {
+        onError(githubResult.message);
+      }
+    } catch (e) {
+      if (e instanceof Error) {
+        onError(e.message);
+      } else {
+        onError(String(e));
+      }
+    }
+  }
+
   private scheduleStateUpdate(): void {
     if (this.stateUpdateTimeoutHandle !== undefined) {
       clearTimeout(this.stateUpdateTimeoutHandle);
@@ -867,12 +993,23 @@ export class App extends LitElement {
     });
   }
 
+  private makeInputSchemaEditorState(schemaText: string): EditorState {
+    return EditorState.create({
+      extensions: [basicSetup, tokyoNightDay, json()],
+      doc: schemaText,
+    });
+  }
+
   @query("#input-format")
   inputKindElement: HTMLSelectElement | undefined;
   @query("#input-value")
   inputValueElement: CodeMirror | undefined;
   @query("#schema-json")
   inputSchemaElement: CodeMirror | undefined;
+  @query("#github-url")
+  githubUrlElement: HTMLInputElement | undefined;
+  @query("#github-token")
+  githubTokenElement: HTMLInputElement | undefined;
   @query("#result-readable-json")
   resultReadableJsonElement: CodeMirror | undefined;
   @query("#result-dense-json")
@@ -884,6 +1021,8 @@ export class App extends LitElement {
 
   @state()
   private appState = makeZeroState();
+  @state()
+  private githubState: GithubState = { kind: "initial" };
 }
 
 if (!customElements.get("skir-converter-app")) {
@@ -894,4 +1033,15 @@ declare global {
   interface HTMLElementTagNameMap {
     "skir-converter-app": App;
   }
+}
+
+type GithubState = {
+  kind: "initial";
+} | {
+  kind: "fetching";
+} | {
+  kind: "success";
+} | {
+  kind: "error";
+  error: string;
 }

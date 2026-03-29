@@ -27,7 +27,7 @@ class RecordToTypeDefinitionFlow {
   private getRecordSignature(recordKey: RecordKey): TypeSignature {
     const { modulePath, record, recordAncestors } =
       this.modules.recordMap.get(recordKey)!;
-    const qualifiedName = recordAncestors.map((a) => a.name).join(".");
+    const qualifiedName = recordAncestors.map((a) => a.name.text).join(".");
     const recordId = `${modulePath}:${qualifiedName}`;
     if (!this.seenRecords.has(record.key)) {
       this.seenRecords.add(record.key);
