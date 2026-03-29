@@ -15,7 +15,7 @@ import { recordToTypeDefinition } from "./record-to-type-definition";
 @customElement("skir-converter-app")
 export class App extends LitElement {
   static override styles = css`
-    @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+    @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 
     :host {
       --bg: #d5d6db;
@@ -40,7 +40,7 @@ export class App extends LitElement {
         radial-gradient(circle at 92% 0%, #d8e6ff 0%, transparent 30%),
         linear-gradient(180deg, #d9dbe2 0%, var(--bg) 100%);
       color: var(--ink);
-      font-family: "JetBrains Mono", monospace;
+      font-family: "Space Grotesk", "Avenir Next", sans-serif;
     }
 
     * {
@@ -112,7 +112,7 @@ export class App extends LitElement {
       color: #6b4b13;
       padding: 0.3rem 0.7rem;
       font-size: 0.72rem;
-      font-family: "IBM Plex Mono", monospace;
+      font-family: "Space Grotesk", "Avenir Next", sans-serif;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       white-space: nowrap;
@@ -153,7 +153,7 @@ export class App extends LitElement {
       margin: 0;
       font-size: 0.76rem;
       color: var(--muted);
-      font-family: "IBM Plex Mono", monospace;
+      font-family: "Space Grotesk", "Avenir Next", sans-serif;
     }
 
     .panel-body {
@@ -186,7 +186,7 @@ export class App extends LitElement {
       cursor: pointer;
       background: transparent;
       color: var(--muted);
-      font-family: "JetBrains Mono", monospace;
+      font-family: "Space Grotesk", "Avenir Next", sans-serif;
       font-size: 0.77rem;
       transition: background-color 120ms ease, color 120ms ease,
         box-shadow 120ms ease;
@@ -225,7 +225,7 @@ export class App extends LitElement {
       border-radius: 10px;
       background: rgba(248, 250, 255, 0.55);
       color: var(--ink);
-      font-family: "JetBrains Mono", monospace;
+      font-family: "Space Grotesk", "Avenir Next", sans-serif;
       font-size: 0.8rem;
       line-height: 1.5;
       text-align: center;
@@ -242,7 +242,7 @@ export class App extends LitElement {
       text-transform: uppercase;
       letter-spacing: 0.1em;
       color: var(--muted);
-      font-family: "JetBrains Mono", monospace;
+      font-family: "Space Grotesk", "Avenir Next", sans-serif;
     }
 
     textarea,
@@ -255,7 +255,7 @@ export class App extends LitElement {
       color: var(--ink);
       padding: 0.62rem 0.7rem;
       font-size: 0.84rem;
-      font-family: "JetBrains Mono", monospace;
+      font-family: "Space Grotesk", "Avenir Next", sans-serif;
       outline: none;
       transition: border-color 120ms ease, box-shadow 120ms ease;
     }
@@ -299,7 +299,7 @@ export class App extends LitElement {
       justify-content: space-between;
       align-items: center;
       gap: 0.5rem;
-      font-family: "JetBrains Mono", monospace;
+      font-family: "Space Grotesk", "Avenir Next", sans-serif;
       font-size: 0.78rem;
     }
 
@@ -345,7 +345,7 @@ export class App extends LitElement {
     .result-message {
       margin: 0;
       padding: 0.75rem;
-      font-family: "JetBrains Mono", monospace;
+      font-family: "Space Grotesk", "Avenir Next", sans-serif;
       font-size: 0.8rem;
       line-height: 1.5;
     }
@@ -372,7 +372,7 @@ export class App extends LitElement {
       border-radius: 8px;
       background: #f0f4ff;
       color: var(--muted);
-      font-family: "JetBrains Mono", monospace;
+      font-family: "Space Grotesk", "Avenir Next", sans-serif;
       font-size: 0.72rem;
       padding: 0.3rem 0.65rem;
       cursor: pointer;
@@ -387,7 +387,7 @@ export class App extends LitElement {
     }
 
     .copy-confirmation {
-      font-family: "JetBrains Mono", monospace;
+      font-family: "Space Grotesk", "Avenir Next", sans-serif;
       font-size: 0.72rem;
       color: var(--ok);
     }
@@ -402,7 +402,7 @@ export class App extends LitElement {
       margin: 0;
       font-size: 0.74rem;
       color: var(--muted);
-      font-family: "JetBrains Mono", monospace;
+      font-family: "Space Grotesk", "Avenir Next", sans-serif;
     }
 
     .field-label-row {
@@ -413,7 +413,7 @@ export class App extends LitElement {
     }
 
     .field-help-link {
-      font-family: "JetBrains Mono", monospace;
+      font-family: "Space Grotesk", "Avenir Next", sans-serif;
       font-size: 0.66rem;
       color: var(--muted);
       text-decoration: underline;
@@ -431,7 +431,7 @@ export class App extends LitElement {
       border-radius: 8px;
       background: #f0f4ff;
       color: var(--ink);
-      font-family: "JetBrains Mono", monospace;
+      font-family: "Space Grotesk", "Avenir Next", sans-serif;
       font-size: 0.78rem;
       padding: 0.38rem 0.72rem;
       cursor: pointer;
@@ -458,7 +458,7 @@ export class App extends LitElement {
     }
 
     .github-fetch-status {
-      font-family: "JetBrains Mono", monospace;
+      font-family: "Space Grotesk", "Avenir Next", sans-serif;
       font-size: 0.72rem;
       line-height: 1.4;
     }
