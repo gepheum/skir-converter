@@ -32,8 +32,11 @@ export class App extends LitElement {
 
       display: block;
       min-height: 100vh;
-      background:
-        radial-gradient(circle at 10% -10%, #eef4ff 0%, transparent 35%),
+      background: radial-gradient(
+          circle at 10% -10%,
+          #eef4ff 0%,
+          transparent 35%
+        ),
         radial-gradient(circle at 92% 0%, #d8e6ff 0%, transparent 30%),
         linear-gradient(180deg, #d9dbe2 0%, var(--bg) 100%);
       color: var(--ink);
