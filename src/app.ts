@@ -2,7 +2,6 @@
 
 import { json } from "@codemirror/lang-json";
 import { EditorState } from "@codemirror/state";
-import { tokyoNightDay } from "@uiw/codemirror-theme-tokyo-night-day";
 import { basicSetup } from "codemirror";
 import { css, html, LitElement, TemplateResult } from "lit";
 import { customElement, query, state } from "lit/decorators.js";
@@ -10,74 +9,154 @@ import { getModuleFromGithubUrl } from "skir/dist/get_dependencies_flow.js";
 import { AppState, makeZeroState, updateAppState } from "./app-state";
 import "./code-mirror";
 import { CodeMirror } from "./code-mirror";
+import { whiteEditorThemeExtension } from "./editor-theme";
 import { recordToTypeDefinition } from "./record-to-type-definition";
 
 @customElement("skir-converter-app")
 export class App extends LitElement {
   static override styles = css`
-    @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+    @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Press+Start+2P&display=swap");
 
     :host {
-      --bg: #d5d6db;
-      --bg-panel: #e9e9ef;
-      --bg-panel-2: #e2e3e9;
-      --ink: #3760bf;
-      --muted: #5a6aa6;
-      --line: #b7c5e3;
-      --accent: #2e7de9;
-      --accent-soft: #d9e8ff;
-      --warm: #c64343;
-      --warm-soft: #ffe4e4;
-      --ok: #587539;
+      --bg: #f3f1e8;
+      --bg-panel: #fffdf7;
+      --bg-panel-2: #efecdf;
+      --ink: #111111;
+      --muted: #545454;
+      --line: #232323;
+      --line-bright: #000000;
+      --accent: #111111;
+      --accent-soft: #e7e3d6;
+      --warm: #111111;
+      --warm-soft: #faf8f0;
+      --ok: #303030;
+      --editor-bg: #050505;
+      --editor-surface: #0f0f0f;
+      --editor-border: #343434;
+      --editor-ink: #f5f5f5;
+      --editor-muted: #8b8b8b;
 
       display: block;
+      position: relative;
       min-height: 100vh;
+      overflow: hidden;
       background: radial-gradient(
-          circle at 10% -10%,
-          #eef4ff 0%,
-          transparent 35%
-        ),
-        radial-gradient(circle at 92% 0%, #d8e6ff 0%, transparent 30%),
-        linear-gradient(180deg, #d9dbe2 0%, var(--bg) 100%);
+            circle at 18% 14%,
+            rgba(0, 0, 0, 0.14) 0,
+            transparent 2px
+          )
+          0 0 / 38px 38px,
+        radial-gradient(
+            circle at 74% 26%,
+            rgba(0, 0, 0, 0.08) 0,
+            transparent 1.5px
+          )
+          0 0 / 29px 29px,
+        linear-gradient(180deg, #fcfaf2 0%, var(--bg) 100%);
       color: var(--ink);
-      font-family: "Space Grotesk", "Avenir Next", sans-serif;
+      font-family: "IBM Plex Mono", monospace;
+    }
+
+    :host::before,
+    :host::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    :host::before {
+      background: linear-gradient(
+        180deg,
+        transparent,
+        rgba(0, 0, 0, 0.025) 45%,
+        transparent
+      );
+      opacity: 0.8;
+    }
+
+    :host::after {
+      background: repeating-linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.035) 0,
+        rgba(0, 0, 0, 0.035) 1px,
+        transparent 1px,
+        transparent 4px
+      );
+      opacity: 0.1;
     }
 
     * {
       box-sizing: border-box;
     }
 
+    main {
+      position: relative;
+      z-index: 1;
+    }
+
+    a {
+      color: var(--accent);
+    }
+
     .app-shell {
-      max-width: 1200px;
+      max-width: 1240px;
       margin: 0 auto;
-      padding: 0.6rem 0.8rem;
+      padding: 1rem;
       display: flex;
       flex-direction: column;
-      gap: 0.6rem;
+      gap: 1rem;
     }
 
     .top-row {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.6rem;
+      gap: 1rem;
     }
 
     .headline {
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: linear-gradient(180deg, #f0f4ff, #e4e9f8);
-      padding: 0.95rem 1rem;
+      border: 2px solid var(--line-bright);
+      border-radius: 0;
+      background: linear-gradient(180deg, #fffef8 0%, #f1ede0 100%);
+      padding: 1rem 1.1rem;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
       gap: 1rem;
-      box-shadow: 0 10px 28px rgba(55, 96, 191, 0.1);
+      box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.12),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+    }
+
+    .brand-lockup {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand-icon-shell {
+      width: 4.5rem;
+      height: 4.5rem;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--accent);
+      background: #ffffff;
+      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.12);
+    }
+
+    .brand-icon {
+      width: 2.8rem;
+      height: 2.8rem;
+      display: block;
+      image-rendering: pixelated;
     }
 
     .title-wrap {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 0.45rem;
+      min-width: 0;
     }
 
     .headline-link {
@@ -93,58 +172,58 @@ export class App extends LitElement {
 
     h1 {
       margin: 0;
-      font-size: 1.08rem;
-      letter-spacing: 0.04em;
+      font-family: "Press Start 2P", monospace;
+      font-size: clamp(0.96rem, 2vw, 1.45rem);
+      line-height: 1.45;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
+      text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.08);
     }
 
     .subtitle {
       margin: 0;
       color: var(--muted);
-      font-size: 0.78rem;
+      max-width: 46rem;
+      font-size: 0.82rem;
       line-height: 1.5;
     }
 
-    .pill {
-      border-radius: 999px;
-      border: 1px solid #cfb78c;
-      background: #fff0cb;
-      color: #6b4b13;
-      padding: 0.3rem 0.7rem;
-      font-size: 0.72rem;
-      font-family: "Space Grotesk", "Avenir Next", sans-serif;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      white-space: nowrap;
-    }
-
     .panel {
-      border: 1px solid var(--line);
-      border-radius: 12px;
+      border: 2px solid var(--line);
+      border-radius: 0;
       background: var(--bg-panel);
-      box-shadow: 0 8px 22px rgba(55, 96, 191, 0.08);
+      box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.1),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.03);
       overflow: hidden;
     }
 
     .top-panel {
       display: flex;
       flex-direction: column;
-      height: 320px;
+      height: 340px;
     }
 
     .panel-head {
-      border-bottom: 1px solid var(--line);
-      padding: 0.7rem 0.9rem;
+      border-bottom: 1px solid var(--line-bright);
+      padding: 0.8rem 0.95rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 0.75rem;
-      background: var(--bg-panel-2);
+      background: repeating-linear-gradient(
+        180deg,
+        #f7f3e7 0,
+        #f7f3e7 2px,
+        var(--bg-panel-2) 2px,
+        var(--bg-panel-2) 4px
+      );
     }
 
     .panel-head h2 {
       margin: 0;
-      font-size: 0.82rem;
+      font-family: "Press Start 2P", monospace;
+      font-size: 0.7rem;
+      line-height: 1.4;
       text-transform: uppercase;
       letter-spacing: 0.1em;
     }
@@ -153,14 +232,14 @@ export class App extends LitElement {
       margin: 0;
       font-size: 0.76rem;
       color: var(--muted);
-      font-family: "Space Grotesk", "Avenir Next", sans-serif;
+      font-family: "IBM Plex Mono", monospace;
     }
 
     .panel-body {
-      padding: 0.85rem;
+      padding: 0.95rem;
       display: flex;
       flex-direction: column;
-      gap: 0.8rem;
+      gap: 0.9rem;
     }
 
     .top-panel .panel-body {
@@ -172,30 +251,38 @@ export class App extends LitElement {
       display: inline-flex;
       width: fit-content;
       border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 0.15rem;
-      background: #dde4f4;
-      gap: 0.2rem;
+      border-radius: 0;
+      padding: 0.2rem;
+      background: #ebe7db;
+      gap: 0.35rem;
+      flex-wrap: wrap;
     }
 
     .tab-row button {
-      border: none;
-      border-radius: 6px;
-      padding: 0.4rem 0.7rem;
+      border: 1px solid transparent;
+      border-radius: 0;
+      padding: 0.5rem 0.72rem;
       min-width: 7.5rem;
       cursor: pointer;
       background: transparent;
       color: var(--muted);
-      font-family: "Space Grotesk", "Avenir Next", sans-serif;
+      font-family: "IBM Plex Mono", monospace;
       font-size: 0.77rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
       transition: background-color 120ms ease, color 120ms ease,
-        box-shadow 120ms ease;
+        border-color 120ms ease;
+    }
+
+    .tab-row button:hover {
+      color: var(--ink);
+      border-color: var(--line-bright);
     }
 
     .tab-row button[aria-selected="true"] {
       background: var(--accent);
       color: #fff;
-      box-shadow: 0 0 0 1px rgba(46, 125, 233, 0.25) inset;
+      border-color: var(--accent);
     }
 
     .field {
@@ -221,16 +308,15 @@ export class App extends LitElement {
       align-items: center;
       justify-content: center;
       padding: 0.9rem;
-      border: 1px solid rgba(183, 197, 227, 0.92);
-      border-radius: 10px;
-      background: rgba(248, 250, 255, 0.55);
-      color: var(--ink);
-      font-family: "Space Grotesk", "Avenir Next", sans-serif;
+      border: 1px dashed var(--line-bright);
+      border-radius: 0;
+      background: rgba(255, 253, 247, 0.92);
+      color: #111;
+      font-family: "IBM Plex Mono", monospace;
       font-size: 0.8rem;
       line-height: 1.5;
       text-align: center;
       cursor: text;
-      backdrop-filter: blur(2px);
     }
 
     .editor-overlay span {
@@ -242,7 +328,7 @@ export class App extends LitElement {
       text-transform: uppercase;
       letter-spacing: 0.1em;
       color: var(--muted);
-      font-family: "Space Grotesk", "Avenir Next", sans-serif;
+      font-family: "IBM Plex Mono", monospace;
     }
 
     textarea,
@@ -250,12 +336,12 @@ export class App extends LitElement {
     select {
       width: 100%;
       border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #f5f8ff;
+      border-radius: 0;
+      background: #fffef9;
       color: var(--ink);
-      padding: 0.62rem 0.7rem;
+      padding: 0.72rem 0.78rem;
       font-size: 0.84rem;
-      font-family: "Space Grotesk", "Avenir Next", sans-serif;
+      font-family: "IBM Plex Mono", monospace;
       outline: none;
       transition: border-color 120ms ease, box-shadow 120ms ease;
     }
@@ -264,7 +350,7 @@ export class App extends LitElement {
     input:focus,
     select:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(46, 125, 233, 0.18);
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.12);
     }
 
     textarea {
@@ -282,8 +368,8 @@ export class App extends LitElement {
     .skir-view {
       min-height: 188px;
       border: 1px solid var(--line);
-      border-radius: 10px;
-      background: linear-gradient(180deg, #fffdf5, #fffaf0);
+      border-radius: 0;
+      background: linear-gradient(180deg, #101010, #080808);
       padding: 0.8rem;
       display: grid;
       gap: 0.5rem;
@@ -291,26 +377,26 @@ export class App extends LitElement {
     }
 
     .tree-node {
-      border: 1px solid #e2d9c5;
-      border-radius: 8px;
-      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 0;
+      background: #0a0a0a;
       padding: 0.52rem 0.6rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 0.5rem;
-      font-family: "Space Grotesk", "Avenir Next", sans-serif;
+      font-family: "IBM Plex Mono", monospace;
       font-size: 0.78rem;
     }
 
     .node-type {
-      color: #6a6e77;
+      color: var(--muted);
     }
 
     .hint {
       margin: 0;
       font-size: 0.74rem;
-      color: #6a5b3f;
+      color: var(--muted);
       line-height: 1.5;
     }
 
@@ -322,9 +408,9 @@ export class App extends LitElement {
 
     .result-panel-body {
       border: 1px solid var(--line);
-      border-radius: 12px;
+      border-radius: 0;
       overflow: hidden;
-      background: #f5f8ff;
+      background: #faf7ee;
     }
 
     .result-editors {
@@ -342,19 +428,19 @@ export class App extends LitElement {
     .result-message {
       margin: 0;
       padding: 0.75rem;
-      font-family: "Space Grotesk", "Avenir Next", sans-serif;
+      font-family: "IBM Plex Mono", monospace;
       font-size: 0.8rem;
       line-height: 1.5;
     }
 
     .result-message.info {
       color: var(--muted);
-      background: #f4f7ff;
+      background: #f3eee1;
     }
 
     .result-message.error {
-      color: #8d2b2b;
-      background: #ffeaea;
+      color: #111;
+      background: #f5e9e9;
     }
 
     .result-controls {
@@ -362,16 +448,17 @@ export class App extends LitElement {
       align-items: center;
       justify-content: space-between;
       gap: 0.5rem;
+      flex-wrap: wrap;
     }
 
     .copy-btn {
       border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #f0f4ff;
-      color: var(--muted);
-      font-family: "Space Grotesk", "Avenir Next", sans-serif;
+      border-radius: 0;
+      background: #fffef9;
+      color: var(--ink);
+      font-family: "IBM Plex Mono", monospace;
       font-size: 0.72rem;
-      padding: 0.3rem 0.65rem;
+      padding: 0.42rem 0.72rem;
       cursor: pointer;
       transition: background-color 120ms ease, color 120ms ease,
         border-color 120ms ease;
@@ -384,7 +471,7 @@ export class App extends LitElement {
     }
 
     .copy-confirmation {
-      font-family: "Space Grotesk", "Avenir Next", sans-serif;
+      font-family: "IBM Plex Mono", monospace;
       font-size: 0.72rem;
       color: var(--ok);
     }
@@ -399,7 +486,7 @@ export class App extends LitElement {
       margin: 0;
       font-size: 0.74rem;
       color: var(--muted);
-      font-family: "Space Grotesk", "Avenir Next", sans-serif;
+      font-family: "IBM Plex Mono", monospace;
     }
 
     .field-label-row {
@@ -410,9 +497,9 @@ export class App extends LitElement {
     }
 
     .field-help-link {
-      font-family: "Space Grotesk", "Avenir Next", sans-serif;
+      font-family: "IBM Plex Mono", monospace;
       font-size: 0.66rem;
-      color: var(--muted);
+      color: var(--accent);
       text-decoration: underline;
     }
 
@@ -425,25 +512,28 @@ export class App extends LitElement {
     .github-fetch-btn {
       align-self: flex-start;
       border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #f0f4ff;
+      border-radius: 0;
+      background: #fffef9;
       color: var(--ink);
-      font-family: "Space Grotesk", "Avenir Next", sans-serif;
+      font-family: "IBM Plex Mono", monospace;
       font-size: 0.78rem;
-      padding: 0.38rem 0.72rem;
+      padding: 0.45rem 0.78rem;
       cursor: pointer;
       transition: background-color 120ms ease, border-color 120ms ease;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
     }
 
     .github-fetch-btn:hover {
-      background: var(--accent-soft);
+      background: var(--accent);
       border-color: var(--accent);
+      color: #fff;
     }
 
     .github-fetch-btn:disabled {
       opacity: 0.6;
       cursor: not-allowed;
-      background: #eef1f8;
+      background: #ece7da;
       border-color: var(--line);
     }
 
@@ -455,9 +545,12 @@ export class App extends LitElement {
     }
 
     .github-fetch-status {
-      font-family: "Space Grotesk", "Avenir Next", sans-serif;
+      font-family: "IBM Plex Mono", monospace;
       font-size: 0.72rem;
       line-height: 1.4;
+      padding: 0.28rem 0.5rem;
+      border: 1px solid var(--line);
+      background: #f5f0e3;
     }
 
     .github-fetch-status.success {
@@ -465,7 +558,9 @@ export class App extends LitElement {
     }
 
     .github-fetch-status.error {
-      color: var(--warm);
+      color: #111;
+      background: #f5e9e9;
+      border-color: var(--line);
     }
 
     @media (max-width: 930px) {
@@ -476,6 +571,44 @@ export class App extends LitElement {
       .headline {
         align-items: flex-start;
         flex-direction: column;
+      }
+
+      .brand-lockup {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app-shell {
+        padding: 0.8rem;
+      }
+
+      .brand-icon-shell {
+        width: 3.8rem;
+        height: 3.8rem;
+      }
+
+      .brand-icon {
+        width: 2.35rem;
+        height: 2.35rem;
+      }
+
+      .tab-row {
+        width: 100%;
+      }
+
+      .tab-row button {
+        flex: 1 1 10rem;
+      }
+
+      .result-controls {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .copy-wrap {
+        justify-content: space-between;
       }
     }
   `;
@@ -518,14 +651,20 @@ export class App extends LitElement {
     return html`
       <main class="app-shell">
         <header class="headline">
-          <div class="title-wrap">
-            <a class="headline-link" href="https://build.skir/converter">
-              <h1>Skir Format Converter</h1>
-            </a>
-            <p class="subtitle">
-              Convert values across dense JSON, readable JSON, and binary
-              formats. All conversion happens locally in your browser.
-            </p>
+          <div class="brand-lockup">
+            <div class="brand-icon-shell" aria-hidden="true">
+              <img class="brand-icon" src="./converter-favicon.svg" alt="" />
+            </div>
+
+            <div class="title-wrap">
+              <a class="headline-link" href="https://skir.build/converter">
+                <h1>Skir Converter</h1>
+              </a>
+              <p class="subtitle">
+                Translate schemas and values between dense JSON, readable JSON,
+                and binary formats without leaving your browser.
+              </p>
+            </div>
           </div>
         </header>
 
@@ -696,7 +835,7 @@ export class App extends LitElement {
               id="input-value"
               fill-height
               .initialState=${EditorState.create({
-                extensions: [basicSetup, tokyoNightDay, json()],
+                extensions: [basicSetup, whiteEditorThemeExtension, json()],
               })}
               @text-modified=${(): void => this.onValueTextModified()}
             ></skir-code-mirror>
@@ -996,7 +1135,7 @@ export class App extends LitElement {
 
   private makeInputSchemaEditorState(schemaText: string): EditorState {
     return EditorState.create({
-      extensions: [basicSetup, tokyoNightDay, json()],
+      extensions: [basicSetup, whiteEditorThemeExtension, json()],
       doc: schemaText,
     });
   }

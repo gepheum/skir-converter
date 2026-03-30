@@ -1,6 +1,6 @@
 {
   "name": "skir-converter",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "",
   "homepage": "https://github.com/gepheum/skir-converter#readme",
   "bugs": {
@@ -39,14 +39,14 @@
     "@codemirror/lang-json": "^6.0.2",
     "@codemirror/language": "^6.11.2",
     "@uiw/codemirror-theme-tokyo-night": "^4.25.4",
-    "@uiw/codemirror-theme-tokyo-night-day": "^4.25.9",
+    "@uiw/codemirror-theme-white": "^4.25.9",
     "codemirror": "^6.0.2",
     "lit": "^3.2.0",
     "nanoevents": "^9.1.0",
-    "skir": "^1.1.29",
-    "skir-internal": "^0.2.19",
+    "skir": "^1.1.30",
     "skir-client": "^1.0.12",
-    "skir-codemirror-plugin": "^1.0.2"
+    "skir-codemirror-plugin": "^1.0.2",
+    "skir-internal": "^0.2.19"
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "^0.6.3",

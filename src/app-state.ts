@@ -1,9 +1,9 @@
 import { json } from "@codemirror/lang-json";
 import { EditorState } from "@codemirror/state";
-import { tokyoNightDay } from "@uiw/codemirror-theme-tokyo-night-day";
 import { basicSetup } from "codemirror";
 import { Json, parseTypeDescriptorFromJson, TypeDescriptor } from "skir-client";
 import { createEditorState, TypeDefinition } from "skir-codemirror-plugin";
+import { whiteEditorTheme, whiteEditorThemeExtension } from "./editor-theme";
 
 export interface InputValue {
   readonly text: string;
@@ -213,21 +213,21 @@ function computeResult(input: InputValue, schema: InputSchema): ResultOrError {
       json: readableJson,
       schema: typeDescriptor.value.asJson() as TypeDefinition,
       readOnly: true,
-      theme: "tokyo-night-day",
+      theme: whiteEditorTheme,
     }),
     denseJsonEditorState: EditorState.create({
       doc: JSON.stringify(denseJson),
-      extensions: [basicSetup, tokyoNightDay, json()],
+      extensions: [basicSetup, whiteEditorThemeExtension, json()],
     }),
     base16EditorState: EditorState.create({
       doc: Array.from(new Uint8Array(bytes))
         .map((b) => b.toString(16).padStart(2, "0"))
         .join(""),
-      extensions: [basicSetup, tokyoNightDay],
+      extensions: [basicSetup, whiteEditorThemeExtension],
     }),
     base64EditorState: EditorState.create({
       doc: btoa(String.fromCharCode(...new Uint8Array(bytes))),
-      extensions: [basicSetup, tokyoNightDay],
+      extensions: [basicSetup, whiteEditorThemeExtension],
     }),
   };
 }
