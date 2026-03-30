@@ -657,7 +657,7 @@ export class App extends LitElement {
             </div>
 
             <div class="title-wrap">
-              <a class="headline-link" href="https://skir.build/converter">
+              <a class="headline-link" href="/">
                 <h1>Skir Converter</h1>
               </a>
               <p class="subtitle">
