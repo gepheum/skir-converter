@@ -1,6 +1,6 @@
 import { json } from "@codemirror/lang-json";
 import { EditorState } from "@codemirror/state";
-import { basicSetup } from "codemirror";
+import { minimalSetup } from "codemirror";
 import { Json, parseTypeDescriptorFromJson, TypeDescriptor } from "skir-client";
 import { createEditorState, TypeDefinition } from "skir-codemirror-plugin";
 import { whiteEditorTheme, whiteEditorThemeExtension } from "./editor-theme";
@@ -146,7 +146,7 @@ function makeInputValue(text: string): InputValue {
   } catch (e) {
     parsed = {
       kind: "parse-error",
-      error: e instanceof Error ? e.message : String(e),
+      error: String(e),
     };
   }
   return { text, parsed };
@@ -165,7 +165,7 @@ function makeInputSchema(text: string): InputSchema {
       text,
       typeDescriptor: {
         kind: "error",
-        error: e instanceof Error ? e.message : String(e),
+        error: String(e),
       },
     };
   }
@@ -200,11 +200,7 @@ function computeResult(input: InputValue, schema: InputSchema): ResultOrError {
       bytes = input.parsed.value;
     }
   } catch (e) {
-    if (e instanceof Error) {
-      return { kind: "schema-value-match-error", error: e.message };
-    } else {
-      return { kind: "schema-value-match-error", error: String(e) };
-    }
+    return { kind: "schema-value-match-error", error: String(e) };
   }
 
   return {
@@ -217,17 +213,17 @@ function computeResult(input: InputValue, schema: InputSchema): ResultOrError {
     }),
     denseJsonEditorState: EditorState.create({
       doc: JSON.stringify(denseJson),
-      extensions: [basicSetup, whiteEditorThemeExtension, json()],
+      extensions: [minimalSetup, whiteEditorThemeExtension, json()],
     }),
     base16EditorState: EditorState.create({
       doc: Array.from(new Uint8Array(bytes))
         .map((b) => b.toString(16).padStart(2, "0"))
         .join(""),
-      extensions: [basicSetup, whiteEditorThemeExtension],
+      extensions: [minimalSetup, whiteEditorThemeExtension],
     }),
     base64EditorState: EditorState.create({
       doc: btoa(String.fromCharCode(...new Uint8Array(bytes))),
-      extensions: [basicSetup, whiteEditorThemeExtension],
+      extensions: [minimalSetup, whiteEditorThemeExtension],
     }),
   };
 }

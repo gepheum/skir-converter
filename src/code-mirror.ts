@@ -42,10 +42,6 @@ export class CodeMirror extends LitElement {
     #container .cm-content {
       min-height: 100%;
     }
-
-    #container .cm-gutters {
-      display: none;
-    }
   `;
 
   override render(): TemplateResult {

@@ -2,7 +2,7 @@
 
 import { json } from "@codemirror/lang-json";
 import { EditorState } from "@codemirror/state";
-import { basicSetup } from "codemirror";
+import { minimalSetup } from "codemirror";
 import { css, html, LitElement, TemplateResult } from "lit";
 import { customElement, query, state } from "lit/decorators.js";
 import { getModuleFromGithubUrl } from "skir/dist/get_dependencies_flow.js";
@@ -835,7 +835,7 @@ export class App extends LitElement {
               id="input-value"
               fill-height
               .initialState=${EditorState.create({
-                extensions: [basicSetup, whiteEditorThemeExtension, json()],
+                extensions: [minimalSetup, whiteEditorThemeExtension, json()],
               })}
               @text-modified=${(): void => this.onValueTextModified()}
             ></skir-code-mirror>
@@ -1135,7 +1135,7 @@ export class App extends LitElement {
 
   private makeInputSchemaEditorState(schemaText: string): EditorState {
     return EditorState.create({
-      extensions: [basicSetup, whiteEditorThemeExtension, json()],
+      extensions: [minimalSetup, whiteEditorThemeExtension, json()],
       doc: schemaText,
     });
   }
