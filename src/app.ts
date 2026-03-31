@@ -888,7 +888,7 @@ export class App extends LitElement {
     return html`
       <section class="panel">
         <div class="panel-head">
-          <h2>Result Panel</h2>
+          <h2>Result</h2>
         </div>
 
         <div class="panel-body">
