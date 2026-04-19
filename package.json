@@ -1,6 +1,6 @@
 {
   "name": "skir-converter",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "",
   "homepage": "https://github.com/gepheum/skir-converter#readme",
   "bugs": {
@@ -44,8 +44,8 @@
     "lit": "^3.2.0",
     "nanoevents": "^9.1.0",
     "skir": "^1.1.30",
-    "skir-client": "^1.0.12",
-    "skir-codemirror-plugin": "^1.0.3",
+    "skir-client": "^1.0.17",
+    "skir-codemirror-plugin": "^1.0.4",
     "skir-internal": "^0.2.19"
   },
   "devDependencies": {
